@@ -26,8 +26,11 @@ const config = {
         use: ["style-loader", "css-loader"],
       },
       {
-        test: /\.(js|jsx)$/i,
-        loader: 'babel-loader',
+        test: /\.m?js$/,
+        exclude: /(node_modules|bower_components)/,
+        use: {
+          loader: "babel-loader",
+        },
       },
       {
         test: /\.(eot|svg|ttf|woff|woff2|png|jpg|gif)$/i,
