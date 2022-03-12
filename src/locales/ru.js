@@ -1,6 +1,12 @@
 export default {
   translation: {
-    validationError: 'Некорректный адрес ссылки',
-    notOneOf: 'Данная ссылка уже существует',
+    errMessages: {
+      validationError: 'Некорректный адрес ссылки',
+      notOneOf: 'Данная ссылка уже существует',
+    },
+    outputHeaders: {
+      posts: 'Посты',
+      feeds: 'Фиды',
+    },
   },
 };
