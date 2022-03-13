@@ -2,12 +2,13 @@ import * as yup from 'yup';
 import i18n from 'i18next';
 import onChange from 'on-change';
 import ru from './locales/ru';
-import parseUrl from './parser';
 import render from './render';
-
-const axios = require('axios');
+import { getRSS, updateRSS } from './rss';
 
 export default () => {
+  const input = document.querySelector('#url-input');
+  const btn = document.querySelector('.btn');
+
   const i18nInstance = i18n.createInstance();
   i18nInstance.init({
     lng: 'ru',
@@ -19,19 +20,11 @@ export default () => {
 
   const state = {
     url: '',
-    status: '', // filling, resolved, rejected
+    status: '',
     feeds: [],
     error: '',
-    feedInfo: {
-      feedTitles: [],
-      feedDescriptions: [],
-      postTitles: [],
-      postLinks: [],
-    },
+    feedInfo: [],
   };
-
-  const input = document.querySelector('#url-input');
-  const btn = document.querySelector('.btn');
 
   const watchedState = onChange(state, () => {
     switch (state.status) {
@@ -48,10 +41,14 @@ export default () => {
         input.value = '';
         input.focus();
         input.classList.remove('is-invalid');
+        render(state, i18nInstance);
         break;
       case 'rejected':
         btn.disabled = true;
         input.classList.add('is-invalid');
+        break;
+      case 'updated':
+        render(state, i18nInstance);
         break;
       default:
         break;
@@ -67,9 +64,7 @@ export default () => {
         url: 'validationError',
       },
     });
-
     const schema = yup.string().url().notOneOf(feeds);
-
     return schema.validate(link);
   };
 
@@ -81,19 +76,9 @@ export default () => {
     event.preventDefault();
     state.url = input.value;
     validateLink(state.url, state.feeds)
-      .then((data) => {
-        watchedState.status = 'resolved';
-        state.feeds.push(data);
-        axios.get(`https://hexlet-allorigins.herokuapp.com/get?url=${encodeURIComponent(data)}`)
-          .then((response) => {
-            state.feedInfo.feedTitles.push(parseUrl(response).feedTitle);
-            state.feedInfo.feedDescriptions.push(parseUrl(response).feedDescription);
-            state.feedInfo.postTitles = [...state.feedInfo.postTitles, ...parseUrl(response).postTitles];
-            state.feedInfo.postLinks = [...state.feedInfo.postLinks, ...parseUrl(response).postLinks];
-            console.log(state);
-            render(state, i18nInstance);
-          })
-          .catch((error) => console.log(error));
+      .then((url) => {
+        state.feeds.push(url);
+        getRSS(url, watchedState);
       })
       .catch((e) => {
         watchedState.status = 'rejected';
@@ -101,5 +86,13 @@ export default () => {
       });
   });
 
+  const updateFeed = () => {
+    setTimeout(() => {
+      updateRSS(state.feedInfo, watchedState);
+      updateFeed();
+    }, 5000);
+  };
+
   watchedState.status = 'begin';
+  updateFeed();
 };
