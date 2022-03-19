@@ -2,12 +2,16 @@ import * as yup from 'yup';
 import i18n from 'i18next';
 import onChange from 'on-change';
 import ru from './locales/ru';
-import render from './render';
 import { getRSS, updateRSS } from './rss';
+import {
+  hideModal, renderPosts, renderFeeds, renderMessage,
+} from './render';
 
 export default () => {
   const input = document.querySelector('#url-input');
-  const btn = document.querySelector('.btn');
+  const btn = document.querySelector('[aria-label="add"]');
+  const modal = document.querySelector('#modal');
+  const modalCloseBtns = modal.querySelectorAll('button');
 
   const i18nInstance = i18n.createInstance();
   i18nInstance.init({
@@ -41,14 +45,16 @@ export default () => {
         input.value = '';
         input.focus();
         input.classList.remove('is-invalid');
-        render(state, i18nInstance);
+        renderPosts(state, i18nInstance);
+        renderFeeds(state, i18nInstance);
         break;
       case 'rejected':
         btn.disabled = true;
         input.classList.add('is-invalid');
         break;
       case 'updated':
-        render(state, i18nInstance);
+        renderPosts(state, i18nInstance);
+        renderFeeds(state, i18nInstance);
         break;
       default:
         break;
@@ -79,11 +85,20 @@ export default () => {
       .then((url) => {
         state.feeds.push(url);
         getRSS(url, watchedState);
+        renderMessage(i18nInstance.t(['successMessage']));
       })
       .catch((e) => {
         watchedState.status = 'rejected';
         state.error = e.errors.map((err) => i18nInstance.t([`errMessages.${err}`]));
+        renderMessage(state.error, true);
       });
+  });
+
+  modal.addEventListener('click', (event) => {
+    event.preventDefault();
+    if (event.target === modalCloseBtns || event.target !== this) {
+      hideModal(modal);
+    }
   });
 
   const updateFeed = () => {
