@@ -1,6 +1,6 @@
 const body = document.querySelector('body');
 
-const renderModal = (modal, postTitle, postDescr) => {
+const renderModal = (modal, postTitle, postURL, postDescr) => {
   body.classList.add('modal-open');
   body.style.overflow = 'hidden';
   body.style.paddingRight = '0px';
@@ -15,6 +15,7 @@ const renderModal = (modal, postTitle, postDescr) => {
   const divModalBackdrop = document.createElement('div');
   divModalBackdrop.classList.add('modal-backdrop', 'fade', 'show');
   body.append(divModalBackdrop);
+  modal.querySelector('.full-article').setAttribute('href', postURL);
 };
 
 const hideModal = (modal) => {
@@ -28,6 +29,12 @@ const hideModal = (modal) => {
 };
 
 const renderPosts = (state, i18nInstance) => {
+  let feeds;
+  if (state.selectedFeed.length === 0) {
+    feeds = state.feedInfo;
+  } else {
+    feeds = state.selectedFeed;
+  }
   const postsDiv = document.querySelector('.posts');
   postsDiv.innerHTML = '';
   const cardDiv = document.createElement('div');
@@ -41,7 +48,7 @@ const renderPosts = (state, i18nInstance) => {
   listItem.classList.add('list-group', 'border-0', 'rounded-0');
   const modal = document.querySelector('#modal');
 
-  state.feedInfo.forEach((feed) => {
+  feeds.forEach((feed) => {
     const links = feed.posts.map((post) => {
       const item = document.createElement('li');
       item.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
@@ -61,7 +68,7 @@ const renderPosts = (state, i18nInstance) => {
       previewBtn.addEventListener('click', (e) => {
         e.preventDefault();
         if (e.target === previewBtn) {
-          renderModal(modal, post[0], post[2]);
+          renderModal(modal, post[0], post[1], post[2]);
           link.classList.remove('fw-bold');
           link.classList.add('fw-normal');
         }
@@ -79,29 +86,44 @@ const renderPosts = (state, i18nInstance) => {
 };
 
 const renderFeeds = (state, i18nInstance) => {
-  const feedsDiv = document.querySelector('.feeds');
-  feedsDiv.innerHTML = '';
+  const feedDiv = document.querySelector('.feeds');
+  feedDiv.innerHTML = '';
   const cardDiv = document.createElement('div');
   cardDiv.classList.add('card', 'border-0');
   const cardBodyDiv = document.createElement('div');
   cardBodyDiv.classList.add('card-body');
-  const h2 = document.createElement('h2');
-  h2.classList.add('card-title', 'h4');
-  h2.textContent = i18nInstance.t(['outputHeaders.feeds']);
+  const cardHeader = document.createElement('h2');
+  cardHeader.classList.add('card-title', 'h4');
+  cardHeader.textContent = i18nInstance.t(['outputHeaders.feeds']);
   const ul = document.createElement('ul');
   ul.classList.add('list-group', 'border-0', 'rounded-0');
-  for (let i = 0; i < state.feedInfo.length; i += 1) {
+  state.feedInfo.forEach((feed) => {
     const li = document.createElement('li');
     li.classList.add('list-group-item', 'border-0', 'border-end-0');
-    li.innerHTML = `
-      <h3 class="h6 m-0">${state.feedInfo[i].feedTitle}</h3>
-      <p class="m-0 small text-black-50">${state.feedInfo[i].feedDescription}</p>
-    `;
+    li.setAttribute('style', 'margin-bottom: 20px');
+    const h3 = document.createElement('h3');
+    h3.classList.add('h6', 'm-0');
+    h3.textContent = `${feed.feedTitle}`;
+    const p = document.createElement('p');
+    p.classList.add('small', 'm-0', 'text-black-50');
+    p.textContent = `${feed.feedDescription}`;
+    li.append(h3, p);
     ul.append(li);
-  }
-  cardBodyDiv.append(h2);
+    h3.addEventListener('mouseover', (e) => {
+      e.preventDefault();
+      e.target.style.cursor = 'pointer';
+    });
+    h3.addEventListener('click', (e) => {
+      e.preventDefault();
+      state.selectedFeed = [];
+      state.selectedFeed.push(feed);
+      renderPosts(state, i18nInstance);
+    });
+  });
+
+  cardBodyDiv.append(cardHeader);
   cardDiv.append(cardBodyDiv, ul);
-  feedsDiv.append(cardDiv);
+  feedDiv.append(cardDiv);
 };
 
 const renderMessage = (message, err = false) => {

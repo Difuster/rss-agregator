@@ -12,6 +12,7 @@ export default () => {
   const btn = document.querySelector('[aria-label="add"]');
   const modal = document.querySelector('#modal');
   const modalCloseBtns = modal.querySelectorAll('button');
+  const readArticleBtn = modal.querySelector('.full-article');
 
   const i18nInstance = i18n.createInstance();
   i18nInstance.init({
@@ -28,6 +29,7 @@ export default () => {
     feeds: [],
     error: '',
     feedInfo: [],
+    selectedFeed: [],
   };
 
   const watchedState = onChange(state, () => {
@@ -78,8 +80,8 @@ export default () => {
     watchedState.status = 'filling';
   });
 
-  btn.addEventListener('click', (event) => {
-    event.preventDefault();
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
     state.url = input.value;
     validateLink(state.url, state.feeds)
       .then((url) => {
@@ -87,17 +89,20 @@ export default () => {
         getRSS(url, watchedState);
         renderMessage(i18nInstance.t(['successMessage']));
       })
-      .catch((e) => {
+      .catch((error) => {
         watchedState.status = 'rejected';
-        state.error = e.errors.map((err) => i18nInstance.t([`errMessages.${err}`]));
+        state.error = error.errors.map((err) => i18nInstance.t([`errMessages.${err}`]));
         renderMessage(state.error, true);
       });
   });
 
   modal.addEventListener('click', (event) => {
     event.preventDefault();
-    if (event.target === modalCloseBtns || event.target !== this) {
+    if (event.target === modalCloseBtns[0] || event.target === modalCloseBtns[1]) {
       hideModal(modal);
+    }
+    if (event.target === readArticleBtn) {
+      window.open(readArticleBtn.getAttribute('href'));
     }
   });
 

@@ -3,5 +3,6 @@
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/e53ae58b4f815bc1fc07/maintainability)](https://codeclimate.com/github/Difuster/frontend-project-lvl3/maintainability)
 
-visit website
-https://rss-8qwdeger9-difuster.vercel.app
+**Visit website**
+&nbsp; 
+https://rss-news-difuster.vercel.app
