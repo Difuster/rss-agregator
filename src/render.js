@@ -46,7 +46,7 @@ const renderForm = (status, input, btn) => {
       input.classList.remove('is-invalid');
       break;
     case 'rejected':
-      btn.disabled = true;
+      btn.disabled = false;
       input.classList.add('is-invalid');
       break;
     default:
