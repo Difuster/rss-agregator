@@ -1,7 +1,6 @@
+import axios from 'axios';
 import _ from 'lodash';
 import parseUrl from './parser';
-
-const axios = require('axios');
 
 const getRSS = (url, state, i18nInstance, showErr) => {
   axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
