@@ -1,8 +1,5 @@
 const body = document.querySelector('body');
 
-const input = document.querySelector('#url-input');
-const btn = document.querySelector('[aria-label="add"]');
-
 const renderModal = (modal, postTitle, postURL, postDescr) => {
   body.classList.add('modal-open');
   body.style.overflow = 'hidden';
@@ -32,7 +29,7 @@ const hideModal = (modal) => {
   divModalBackdrop.remove();
 };
 
-const renderForm = (status) => {
+const renderForm = (status, input, btn) => {
   switch (status) {
     case 'begin':
       input.focus();

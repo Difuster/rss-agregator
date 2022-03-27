@@ -35,18 +35,18 @@ export default () => {
   const watchedState = onChange(state, () => {
     switch (state.status) {
       case 'begin':
-        renderForm('begin');
+        renderForm('begin', input, btn);
         break;
       case 'filling':
-        renderForm('filling');
+        renderForm('filling', input, btn);
         break;
       case 'resolved':
-        renderForm('resolved');
+        renderForm('resolved', input, btn);
         renderPosts(state, i18nInstance);
         renderFeeds(state, i18nInstance);
         break;
       case 'rejected':
-        renderForm('rejected');
+        renderForm('rejected', input, btn);
         break;
       case 'updated':
         renderPosts(state, i18nInstance);
