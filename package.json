@@ -22,10 +22,7 @@
   },
   "homepage": "https://github.com/Difuster/frontend-project-lvl3#readme",
   "devDependencies": {
-    "@babel/core": "^7.17.5",
-    "@babel/preset-env": "^7.16.11",
     "@webpack-cli/generators": "^2.4.2",
-    "babel-loader": "^8.2.3",
     "css-loader": "^6.7.0",
     "eslint": "^8.10.0",
     "eslint-config-airbnb-base": "^15.0.0",
@@ -36,6 +33,9 @@
     "webpack-cli": "^4.9.2"
   },
   "dependencies": {
+    "@babel/core": "^7.17.5",
+    "@babel/preset-env": "^7.16.11",
+    "babel-loader": "^8.2.3",
     "@popperjs/core": "^2.11.2",
     "axios": "^0.26.1",
     "bootstrap": "^5.1.3",
