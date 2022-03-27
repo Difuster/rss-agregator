@@ -3,31 +3,45 @@ import parseUrl from './parser';
 
 const axios = require('axios');
 
-const getRSS = (url, watchedState) => {
+const getRSS = (url, state, i18nInstance, showErr) => {
   axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
     .then((response) => {
-      watchedState.feedInfo.unshift(parseUrl(response));
-      watchedState.status = 'resolved';
+      state.feeds.unshift(parseUrl(response));
+      state.status = 'resolved';
     })
-    .catch((error) => error);
+    .catch((error) => {
+      state.error = i18nInstance.t([`errMessages.${error.message}`]);
+      showErr(state.error, true);
+    });
 };
 
-const updateRSS = (feedInfo) => {
-  const updateUrlParsing = (url) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
+const updateRSS = (feeds, state, i18nInstance, showErr) => {
+  const updateParsedUrl = (url) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
     .then((response) => parseUrl(response))
-    .catch((error) => error);
+    .catch((error) => {
+      state.error = i18nInstance.t([`errMessages.${error.message}`]);
+      showErr(state.error, true);
+    });
+
   const getDifference = () => {
-    feedInfo.forEach((feed) => {
-      updateUrlParsing(feed.link)
+    feeds.forEach((feed) => {
+      updateParsedUrl(feed.link)
         .then((newFeed) => {
-          const newPosts = _.differenceWith(newFeed.posts, feed.posts, _.isEqual);
-          if (newPosts.length !== 0) {
-            feed.posts = [...newPosts, ...feed.posts];
-          }
+          const oldFeedTitles = feed.posts.map((item) => item.title);
+          const newFeedTitles = newFeed.posts.map((item) => item.title);
+          const newTitles = _.differenceWith(newFeedTitles, oldFeedTitles, _.isEqual);
+          newTitles.reverse().forEach((title) => {
+            const newPost = newFeed.posts.filter((post) => post.title === title);
+            feed.posts = [...newPost, ...feed.posts];
+          });
         })
-        .catch((e) => e);
+        .catch((error) => {
+          state.error = i18nInstance.t([`errMessages.${error.message}`]);
+          showErr(state.error, true);
+        });
     });
   };
+
   getDifference();
 };
 

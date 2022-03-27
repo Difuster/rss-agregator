@@ -1,5 +1,8 @@
 const body = document.querySelector('body');
 
+const input = document.querySelector('#url-input');
+const btn = document.querySelector('[aria-label="add"]');
+
 const renderModal = (modal, postTitle, postURL, postDescr) => {
   body.classList.add('modal-open');
   body.style.overflow = 'hidden';
@@ -19,19 +22,45 @@ const renderModal = (modal, postTitle, postURL, postDescr) => {
 };
 
 const hideModal = (modal) => {
+  body.classList.remove('modal-open');
+  body.removeAttribute('style');
   modal.classList.remove('show');
   modal.setAttribute('aria-hidden', 'true');
   modal.removeAttribute('aria-modal');
   modal.style.display = 'none';
-  body.classList.remove('modal-open');
   const divModalBackdrop = document.querySelector('.modal-backdrop');
   divModalBackdrop.remove();
+};
+
+const renderForm = (status) => {
+  switch (status) {
+    case 'begin':
+      input.focus();
+      btn.disabled = true;
+      break;
+    case 'filling':
+      btn.disabled = false;
+      input.classList.remove('is-invalid');
+      break;
+    case 'resolved':
+      btn.disabled = true;
+      input.value = '';
+      input.focus();
+      input.classList.remove('is-invalid');
+      break;
+    case 'rejected':
+      btn.disabled = true;
+      input.classList.add('is-invalid');
+      break;
+    default:
+      break;
+  }
 };
 
 const renderPosts = (state, i18nInstance) => {
   let feeds;
   if (state.selectedFeed.length === 0) {
-    feeds = state.feedInfo;
+    feeds = state.feeds;
   } else {
     feeds = state.selectedFeed;
   }
@@ -53,7 +82,7 @@ const renderPosts = (state, i18nInstance) => {
       const item = document.createElement('li');
       item.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
       const link = document.createElement('a');
-      link.classList.add('fw-bold');
+      post.viewed === false ? link.classList.add('fw-bold') : link.classList.add('fw-normal', 'text-secondary');
       link.setAttribute('target', '_blank');
       const previewBtn = document.createElement('button');
       previewBtn.classList.add('btn', 'btn-outline-primary', 'btn-sm');
@@ -61,17 +90,26 @@ const renderPosts = (state, i18nInstance) => {
       previewBtn.setAttribute('data-bs-target', 'modal');
       previewBtn.setAttribute('aria-label', 'preview');
       previewBtn.textContent = i18nInstance.t(['postText.preview']);
-      link.textContent = `${post[0]}`;
-      link.href = `${post[1]}`;
+      link.textContent = post.title;
+      link.href = post.link;
       item.append(link, previewBtn);
 
       previewBtn.addEventListener('click', (e) => {
         e.preventDefault();
         if (e.target === previewBtn) {
-          renderModal(modal, post[0], post[1], post[2]);
+          renderModal(modal, post.title, post.link, post.description);
+          post.viewed = true;
           link.classList.remove('fw-bold');
-          link.classList.add('fw-normal');
+          link.classList.add('fw-normal', 'text-secondary');
         }
+      });
+
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        post.viewed = true;
+        link.classList.remove('fw-bold');
+        link.classList.add('fw-normal', 'text-secondary');
+        window.open(e.target.getAttribute('href'));
       });
 
       return item;
@@ -97,16 +135,16 @@ const renderFeeds = (state, i18nInstance) => {
   cardHeader.textContent = i18nInstance.t(['outputHeaders.feeds']);
   const ul = document.createElement('ul');
   ul.classList.add('list-group', 'border-0', 'rounded-0');
-  state.feedInfo.forEach((feed) => {
+  state.feeds.forEach((feed) => {
     const li = document.createElement('li');
     li.classList.add('list-group-item', 'border-0', 'border-end-0');
     li.setAttribute('style', 'margin-bottom: 20px');
     const h3 = document.createElement('h3');
     h3.classList.add('h6', 'm-0');
-    h3.textContent = `${feed.feedTitle}`;
+    h3.textContent = `${feed.title}`;
     const p = document.createElement('p');
     p.classList.add('small', 'm-0', 'text-black-50');
-    p.textContent = `${feed.feedDescription}`;
+    p.textContent = `${feed.description}`;
     li.append(h3, p);
     ul.append(li);
     h3.addEventListener('mouseover', (e) => {
@@ -139,5 +177,5 @@ const renderMessage = (message, err = false) => {
 };
 
 export {
-  hideModal, renderPosts, renderFeeds, renderMessage,
+  hideModal, renderForm, renderPosts, renderFeeds, renderMessage, input, btn,
 };

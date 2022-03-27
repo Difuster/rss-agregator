@@ -1,8 +1,9 @@
 export default {
   translation: {
     errMessages: {
-      validationError: 'Некорректный адрес ссылки',
-      notOneOf: 'Данная ссылка уже существует',
+      validationError: 'Ссылка должна быть валидным URL',
+      notOneOf: 'RSS уже существует',
+      'Network Error': 'Ошибка сети',
     },
     successMessage: 'RSS успешно загружен',
     outputHeaders: {

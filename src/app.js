@@ -4,12 +4,10 @@ import onChange from 'on-change';
 import ru from './locales/ru';
 import { getRSS, updateRSS } from './rss';
 import {
-  hideModal, renderPosts, renderFeeds, renderMessage,
+  hideModal, renderForm, renderPosts, renderFeeds, renderMessage, input, btn,
 } from './render';
 
 export default () => {
-  const input = document.querySelector('#url-input');
-  const btn = document.querySelector('[aria-label="add"]');
   const modal = document.querySelector('#modal');
   const modalCloseBtns = modal.querySelectorAll('button');
   const readArticleBtn = modal.querySelector('.full-article');
@@ -26,33 +24,27 @@ export default () => {
   const state = {
     url: '',
     status: '',
-    feeds: [],
+    uploadedFeeds: [],
     error: '',
-    feedInfo: [],
+    feeds: [],
     selectedFeed: [],
   };
 
   const watchedState = onChange(state, () => {
     switch (state.status) {
       case 'begin':
-        input.focus();
-        btn.disabled = true;
+        renderForm('begin');
         break;
       case 'filling':
-        btn.disabled = false;
-        input.classList.remove('is-invalid');
+        renderForm('filling');
         break;
       case 'resolved':
-        btn.disabled = true;
-        input.value = '';
-        input.focus();
-        input.classList.remove('is-invalid');
+        renderForm('resolved');
         renderPosts(state, i18nInstance);
         renderFeeds(state, i18nInstance);
         break;
       case 'rejected':
-        btn.disabled = true;
-        input.classList.add('is-invalid');
+        renderForm('rejected');
         break;
       case 'updated':
         renderPosts(state, i18nInstance);
@@ -63,7 +55,7 @@ export default () => {
     }
   });
 
-  const validateLink = (link, feeds) => {
+  const validateLink = (link, uploadedFeeds) => {
     yup.setLocale({
       mixed: {
         notOneOf: 'notOneOf',
@@ -72,8 +64,17 @@ export default () => {
         url: 'validationError',
       },
     });
-    const schema = yup.string().url().notOneOf(feeds);
+    const schema = yup.string().url().notOneOf(uploadedFeeds);
     return schema.validate(link);
+  };
+
+  const updateFeed = () => {
+    updateRSS(state.feeds);
+    watchedState.status = 'updated';
+    watchedState.status = '';
+    setTimeout(() => {
+      updateFeed();
+    }, 5000);
   };
 
   input.addEventListener('input', () => {
@@ -83,11 +84,12 @@ export default () => {
   btn.addEventListener('click', (e) => {
     e.preventDefault();
     state.url = input.value;
-    validateLink(state.url, state.feeds)
+    validateLink(state.url, state.uploadedFeeds)
       .then((url) => {
-        state.feeds.push(url);
-        getRSS(url, watchedState);
+        state.uploadedFeeds.push(url);
+        getRSS(url, watchedState, i18nInstance, renderMessage);
         renderMessage(i18nInstance.t(['successMessage']));
+        updateFeed();
       })
       .catch((error) => {
         watchedState.status = 'rejected';
@@ -106,13 +108,5 @@ export default () => {
     }
   });
 
-  const updateFeed = () => {
-    setTimeout(() => {
-      updateRSS(state.feedInfo, watchedState);
-      updateFeed();
-    }, 5000);
-  };
-
   watchedState.status = 'begin';
-  updateFeed();
 };
