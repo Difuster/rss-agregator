@@ -177,5 +177,5 @@ const renderMessage = (message, err = false) => {
 };
 
 export {
-  hideModal, renderForm, renderPosts, renderFeeds, renderMessage,s
+  hideModal, renderForm, renderPosts, renderFeeds, renderMessage,
 };
