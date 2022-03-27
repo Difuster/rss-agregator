@@ -4,13 +4,16 @@ import onChange from 'on-change';
 import ru from './locales/ru';
 import { getRSS, updateRSS } from './rss';
 import {
-  hideModal, renderForm, renderPosts, renderFeeds, renderMessage, input, btn,
+  hideModal, renderForm, renderPosts, renderFeeds, renderMessage,
 } from './render';
 
 export default () => {
+  const input = document.querySelector('#url-input');
+  const btn = document.querySelector('[aria-label="add"]');
   const modal = document.querySelector('#modal');
   const modalCloseBtns = modal.querySelectorAll('button');
   const readArticleBtn = modal.querySelector('.full-article');
+
 
   const i18nInstance = i18n.createInstance();
   i18nInstance.init({
