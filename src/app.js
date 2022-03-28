@@ -1,11 +1,11 @@
 import * as yup from 'yup';
 import i18n from 'i18next';
 import onChange from 'on-change';
-import ru from './locales/ru';
-import { getRSS, updateRSS } from './rss';
+import ru from './locales/ru.js';
+import { getRSS, updateRSS } from './rss.js';
 import {
   hideModal, renderForm, renderPosts, renderFeeds, renderMessage,
-} from './render';
+} from './render.js';
 
 export default () => {
   const input = document.querySelector('#url-input');
