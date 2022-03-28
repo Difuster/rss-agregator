@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/Difuster/frontend-project-lvl3#readme",
   "devDependencies": {
+    "@babel/cli": "^7.17.6",
     "@babel/core": "^7.17.5",
     "@babel/preset-env": "^7.16.11",
     "@webpack-cli/generators": "^2.4.2",
