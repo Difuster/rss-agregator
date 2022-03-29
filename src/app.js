@@ -88,6 +88,7 @@ export default () => {
     state.url = input.value;
     validateLink(state.url, state.uploadedFeeds)
       .then((url) => {
+        watchedState.status = 'resolved';
         state.uploadedFeeds.push(url);
         getRSS(url, watchedState, i18nInstance, renderMessage);
         renderMessage(i18nInstance.t(['successMessage']));
