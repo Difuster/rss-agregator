@@ -64,9 +64,10 @@ export default () => {
       },
       string: {
         url: 'validationError',
+        matches: 'RSSError',
       },
     });
-    const schema = yup.string().url().notOneOf(uploadedFeeds);
+    const schema = yup.string().url().matches(/rss/).notOneOf(uploadedFeeds);
     return schema.validate(link);
   };
 
