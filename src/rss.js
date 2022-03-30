@@ -5,8 +5,11 @@ import parseUrl from './parser.js';
 const getRSS = (url, state, i18nInstance, showErr) => {
   axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
     .then((response) => {
+      if (response.data.status.http_code === 404) {
+        state.error = i18nInstance.t([`errMessages.RSSError`]);
+        showErr(state.error, true);
+      }
       state.feeds.unshift(parseUrl(response));
-      state.status = 'resolved';
     })
     .catch((error) => {
       state.error = i18nInstance.t([`errMessages.${error.message}`]);

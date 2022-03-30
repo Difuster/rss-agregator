@@ -33,14 +33,14 @@ const renderForm = (status, input, btn) => {
   switch (status) {
     case 'begin':
       input.focus();
-      btn.disabled = true;
+      btn.disabled = false;
       break;
     case 'filling':
       btn.disabled = false;
       input.classList.remove('is-invalid');
       break;
     case 'resolved':
-      btn.disabled = true;
+      btn.disabled = false;
       input.value = '';
       input.focus();
       input.classList.remove('is-invalid');

@@ -64,10 +64,12 @@ export default () => {
       },
       string: {
         url: 'validationError',
+        min: 'isEmpty',
         matches: 'RSSError',
       },
     });
-    const schema = yup.string().url().matches(/rss/).notOneOf(uploadedFeeds);
+    const schema = yup.string().url().min(1).matches(/rss/)
+      .notOneOf(uploadedFeeds);
     return schema.validate(link);
   };
 
@@ -89,9 +91,9 @@ export default () => {
     state.url = input.value;
     validateLink(state.url, state.uploadedFeeds)
       .then((url) => {
-        watchedState.status = 'resolved';
-        state.uploadedFeeds.push(url);
         getRSS(url, watchedState, i18nInstance, renderMessage);
+        state.uploadedFeeds.push(url);
+        watchedState.status = 'resolved';
         renderMessage(i18nInstance.t(['successMessage']));
         updateFeed();
       })
