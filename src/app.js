@@ -105,22 +105,22 @@ export default () => {
               watchedState.status = 'rejected';
             } else {
               state.feeds.unshift(parseUrl(response));
-              watchedState.status = 'resolved';
               state.uploadedFeeds.push(url);
               renderMessage(i18nInstance.t(['successMessage']));
+              watchedState.status = 'resolved';
               updateFeed();
             }
           })
           .catch((error) => {
-            watchedState.status = 'rejected';
             state.error = i18nInstance.t([`errMessages.${error.message}`]);
             renderMessage(state.error, true);
+            watchedState.status = 'rejected';
           });
       })
       .catch((error) => {
-        watchedState.status = 'rejected';
         state.error = error.errors.map((err) => i18nInstance.t([`errMessages.${err}`]));
         renderMessage(state.error, true);
+        watchedState.status = 'rejected';
       });
   });
 
