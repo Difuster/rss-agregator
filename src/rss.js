@@ -2,23 +2,7 @@ import axios from 'axios';
 import _ from 'lodash';
 import parseUrl from './parser.js';
 
-const getRSS = (url, state, i18nInstance, showErr) => {
-  axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
-    .then((response) => {
-      if (response.data.status.http_code === 404) {
-        state.error = i18nInstance.t([`errMessages.RSSError`]);
-        showErr(state.error, true);
-        state.status = 'rejected';
-      } else {
-        state.feeds.unshift(parseUrl(response));
-        state.status = 'resolved';
-      }
-    })
-    .catch((error) => {
-      state.error = i18nInstance.t([`errMessages.${error.message}`]);
-      showErr(state.error, true);
-    });
-};
+const downloadRSS = (url) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`);
 
 const updateRSS = (feeds, state, i18nInstance, showErr) => {
   const updateParsedUrl = (url) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
@@ -50,4 +34,4 @@ const updateRSS = (feeds, state, i18nInstance, showErr) => {
   getDifference();
 };
 
-export { getRSS, updateRSS };
+export { downloadRSS, updateRSS };

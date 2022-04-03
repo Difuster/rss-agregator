@@ -2,10 +2,11 @@ import * as yup from 'yup';
 import i18n from 'i18next';
 import onChange from 'on-change';
 import ru from './locales/ru.js';
-import { getRSS, updateRSS } from './rss.js';
+import { downloadRSS, updateRSS } from './rss.js';
 import {
   hideModal, renderForm, renderPosts, renderFeeds, renderMessage,
 } from './render.js';
+import parseUrl from './parser.js';
 
 export default () => {
   const input = document.querySelector('#url-input');
@@ -95,11 +96,26 @@ export default () => {
     validateLink(state.url, state.uploadedFeeds)
       .then((url) => {
         watchedState.status = 'loading';
-        const res = getRSS(url, watchedState, i18nInstance, renderMessage);
-        console.log(res);
-        state.uploadedFeeds.push(url);
-        renderMessage(i18nInstance.t(['successMessage']));
-        updateFeed();
+        const rss = downloadRSS(url);
+        rss
+          .then((response) => {
+            if (response.data.status.http_code === 404) {
+              state.error = i18nInstance.t([`errMessages.RSSError`]);
+              renderMessage(state.error, true);
+              watchedState.status = 'rejected';
+            } else {
+              state.feeds.unshift(parseUrl(response));
+              watchedState.status = 'resolved';
+              state.uploadedFeeds.push(url);
+              renderMessage(i18nInstance.t(['successMessage']));
+              updateFeed();
+            }
+          })
+          .catch((error) => {
+            watchedState.status = 'rejected';
+            state.error = i18nInstance.t([`errMessages.${error.message}`]);
+            renderMessage(state.error, true);
+          });
       })
       .catch((error) => {
         watchedState.status = 'rejected';
