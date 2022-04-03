@@ -8,8 +8,10 @@ const getRSS = (url, state, i18nInstance, showErr) => {
       if (response.data.status.http_code === 404) {
         state.error = i18nInstance.t([`errMessages.RSSError`]);
         showErr(state.error, true);
+        state.status = 'rejected';
       }
       state.feeds.unshift(parseUrl(response));
+      state.status = 'resolved';
     })
     .catch((error) => {
       state.error = i18nInstance.t([`errMessages.${error.message}`]);

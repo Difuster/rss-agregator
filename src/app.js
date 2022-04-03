@@ -97,7 +97,6 @@ export default () => {
         watchedState.status = 'loading';
         getRSS(url, watchedState, i18nInstance, renderMessage);
         state.uploadedFeeds.push(url);
-        watchedState.status = 'resolved';
         renderMessage(i18nInstance.t(['successMessage']));
         updateFeed();
       })
