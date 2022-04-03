@@ -40,6 +40,9 @@ export default () => {
       case 'filling':
         renderForm('filling', input, btn);
         break;
+      case 'loading':
+        renderForm('loading', input, btn);
+        break;
       case 'resolved':
         renderForm('resolved', input, btn);
         renderPosts(state, i18nInstance);
@@ -91,6 +94,7 @@ export default () => {
     state.url = input.value;
     validateLink(state.url, state.uploadedFeeds)
       .then((url) => {
+        watchedState.status = 'loading';
         getRSS(url, watchedState, i18nInstance, renderMessage);
         state.uploadedFeeds.push(url);
         watchedState.status = 'resolved';
