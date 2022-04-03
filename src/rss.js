@@ -9,9 +9,10 @@ const getRSS = (url, state, i18nInstance, showErr) => {
         state.error = i18nInstance.t([`errMessages.RSSError`]);
         showErr(state.error, true);
         state.status = 'rejected';
+      } else {
+        state.feeds.unshift(parseUrl(response));
+        state.status = 'resolved';
       }
-      state.feeds.unshift(parseUrl(response));
-      state.status = 'resolved';
     })
     .catch((error) => {
       state.error = i18nInstance.t([`errMessages.${error.message}`]);

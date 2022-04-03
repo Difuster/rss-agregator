@@ -95,7 +95,8 @@ export default () => {
     validateLink(state.url, state.uploadedFeeds)
       .then((url) => {
         watchedState.status = 'loading';
-        getRSS(url, watchedState, i18nInstance, renderMessage);
+        const res = getRSS(url, watchedState, i18nInstance, renderMessage);
+        console.log(res);
         state.uploadedFeeds.push(url);
         renderMessage(i18nInstance.t(['successMessage']));
         updateFeed();
