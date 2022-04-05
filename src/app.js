@@ -41,6 +41,9 @@ export default () => {
       case 'filling':
         renderForm('filling', input, btn);
         break;
+      case 'loading':
+        renderForm('loading', input, btn);
+        break;
       case 'resolved':
         renderForm('resolved', input, btn);
         renderPosts(state, i18nInstance);
@@ -66,10 +69,9 @@ export default () => {
       string: {
         url: 'validationError',
         min: 'isEmpty',
-        matches: 'RSSError',
       },
     });
-    const schema = yup.string().url().min(1).matches(/rss/)
+    const schema = yup.string().url().min(1)
       .notOneOf(uploadedFeeds);
     return schema.validate(link);
   };
@@ -92,8 +94,7 @@ export default () => {
     state.url = input.value;
     validateLink(state.url, state.uploadedFeeds)
       .then((url) => {
-        btn.disabled = true;
-        input.setAttribute('readonly', 'true');
+        watchedState.status = 'loading';
         const rss = downloadRSS(url);
         rss
           .then((response) => {
