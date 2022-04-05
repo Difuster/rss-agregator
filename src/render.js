@@ -39,10 +39,6 @@ const renderForm = (status, input, btn) => {
       btn.disabled = false;
       input.classList.remove('is-invalid');
       break;
-    case 'loading':
-      btn.disabled = true;
-      input.setAttribute('readonly', 'true');
-      break;
     case 'resolved':
       btn.disabled = false;
       input.removeAttribute('readonly');

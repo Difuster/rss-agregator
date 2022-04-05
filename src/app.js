@@ -41,9 +41,6 @@ export default () => {
       case 'filling':
         renderForm('filling', input, btn);
         break;
-      case 'loading':
-        renderForm('loading', input, btn);
-        break;
       case 'resolved':
         renderForm('resolved', input, btn);
         renderPosts(state, i18nInstance);
@@ -93,9 +90,10 @@ export default () => {
   btn.addEventListener('click', (e) => {
     e.preventDefault();
     state.url = input.value;
-    watchedState.status = 'loading';
     validateLink(state.url, state.uploadedFeeds)
       .then((url) => {
+        btn.disabled = true;
+        input.setAttribute('readonly', 'true');
         const rss = downloadRSS(url);
         rss
           .then((response) => {
