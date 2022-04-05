@@ -4,6 +4,9 @@ const parser = new DOMParser();
 
 export default (url) => {
   const parsedDoc = parser.parseFromString(url.data.contents, 'application/xml');
+  if (parsedDoc.querySelector('parsererror')) {
+    throw new Error('RSSError');
+  }
   const feedTitle = parsedDoc.querySelector('channel>title').textContent;
   const feedID = uniqueId();
   const feedDescription = parsedDoc.querySelector('channel>description').textContent;

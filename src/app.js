@@ -99,23 +99,18 @@ export default () => {
         const rss = downloadRSS(url);
         rss
           .then((response) => {
-            try {
-              const feed = parseUrl(response);
-              state.feeds.unshift(feed);
-              state.uploadedFeeds.push(url);
-              state.error = i18nInstance.t(['successMessage']);
-              watchedState.status = 'resolved';
-              updateFeed();
-            } catch (err) {
-              state.error = i18nInstance.t([`errMessages.RSSError`]);
-              watchedState.status = 'rejected';
-            }
+            const feed = parseUrl(response);
+            state.feeds.unshift(feed);
+            state.uploadedFeeds.push(url);
+            state.error = i18nInstance.t(['successMessage']);
+            watchedState.status = 'resolved';
             renderMessage(state.error);
+            updateFeed();
           })
           .catch((error) => {
             state.error = i18nInstance.t([`errMessages.${error.message}`]);
-            renderMessage(state.error);
             watchedState.status = 'rejected';
+            renderMessage(state.error);
           });
       })
       .catch((error) => {
