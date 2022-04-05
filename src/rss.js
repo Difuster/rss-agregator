@@ -6,7 +6,7 @@ const downloadRSS = (url) => axios.get(`https://allorigins.hexlet.app/get?disabl
 
 const updateRSS = (feeds, state, i18nInstance, showErr) => {
   const updateParsedUrl = (url) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
-    .then((response) => parseUrl(response))
+    .then((response) => parseUrl(response, url))
     .catch((error) => {
       state.error = i18nInstance.t([`errMessages.${error.message}`]);
       showErr(state.error, true);

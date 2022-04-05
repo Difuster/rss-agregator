@@ -99,7 +99,7 @@ export default () => {
         const rss = downloadRSS(url);
         rss
           .then((response) => {
-            const feed = parseUrl(response);
+            const feed = parseUrl(response, url);
             state.feeds.unshift(feed);
             state.uploadedFeeds.push(url);
             state.error = i18nInstance.t(['successMessage']);

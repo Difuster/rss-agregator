@@ -2,15 +2,15 @@ import uniqueId from 'lodash/uniqueId.js';
 
 const parser = new DOMParser();
 
-export default (url) => {
-  const parsedDoc = parser.parseFromString(url.data.contents, 'application/xml');
+export default (rss, url) => {
+  const parsedDoc = parser.parseFromString(rss.data.contents, 'application/xml');
   if (parsedDoc.querySelector('parsererror')) {
     throw new Error('RSSError');
   }
   const feedTitle = parsedDoc.querySelector('channel>title').textContent;
   const feedID = uniqueId();
   const feedDescription = parsedDoc.querySelector('channel>description').textContent;
-  const feedLink = url.data.status.url;
+  const feedLink = url;
   const postTitles = Array.from(parsedDoc.querySelectorAll('item>title')).map((item) => item.textContent);
   const postLinks = Array.from(parsedDoc.querySelectorAll('item>link')).map((item) => item.textContent);
   const postDescr = Array.from(parsedDoc.querySelectorAll('item>description')).map((item) => item.textContent);
