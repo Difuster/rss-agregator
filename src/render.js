@@ -167,9 +167,9 @@ const renderFeeds = (state, i18nInstance) => {
   feedDiv.append(cardDiv);
 };
 
-const renderMessage = (message, err = false) => {
+const renderMessage = (message) => {
   const p = document.querySelector('.feedback');
-  if (err === true) {
+  if (message !== 'RSS успешно загружен') {
     p.classList.add('text-danger');
     p.classList.remove('text-success');
   } else {

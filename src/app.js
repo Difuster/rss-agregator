@@ -103,24 +103,24 @@ export default () => {
               const feed = parseUrl(response);
               state.feeds.unshift(feed);
               state.uploadedFeeds.push(url);
-              renderMessage(i18nInstance.t(['successMessage']));
+              state.error = i18nInstance.t(['successMessage']);
               watchedState.status = 'resolved';
               updateFeed();
             } catch (err) {
               state.error = i18nInstance.t([`errMessages.RSSError`]);
-              renderMessage(state.error, true);
               watchedState.status = 'rejected';
             }
+            renderMessage(state.error);
           })
           .catch((error) => {
             state.error = i18nInstance.t([`errMessages.${error.message}`]);
-            renderMessage(state.error, true);
+            renderMessage(state.error);
             watchedState.status = 'rejected';
           });
       })
       .catch((error) => {
         state.error = error.errors.map((err) => i18nInstance.t([`errMessages.${err}`]));
-        renderMessage(state.error, true);
+        renderMessage(state.error);
         watchedState.status = 'rejected';
       });
   });
