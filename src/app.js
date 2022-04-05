@@ -93,9 +93,9 @@ export default () => {
   btn.addEventListener('click', (e) => {
     e.preventDefault();
     state.url = input.value;
+    watchedState.status = 'loading';
     validateLink(state.url, state.uploadedFeeds)
       .then((url) => {
-        watchedState.status = 'loading';
         const rss = downloadRSS(url);
         rss
           .then((response) => {
