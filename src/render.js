@@ -88,6 +88,7 @@ const renderPosts = (state, i18nInstance) => {
       post.viewed === false ? link.classList.add('fw-bold') : link.classList.add('fw-normal', 'text-secondary');
       link.setAttribute('target', '_blank');
       const previewBtn = document.createElement('button');
+      previewBtn.setAttribute('type', 'button');
       previewBtn.classList.add('btn', 'btn-outline-primary', 'btn-sm');
       previewBtn.setAttribute('data-bs-toggle', 'modal');
       previewBtn.setAttribute('data-bs-target', 'modal');
