@@ -89,6 +89,7 @@ const renderPosts = (state, i18nInstance) => {
       link.setAttribute('target', '_blank');
       const previewBtn = document.createElement('button');
       previewBtn.setAttribute('type', 'button');
+      previewBtn.setAttribute('role', 'button');
       previewBtn.classList.add('btn', 'btn-outline-primary', 'btn-sm');
       previewBtn.setAttribute('data-bs-toggle', 'modal');
       previewBtn.setAttribute('data-bs-target', 'modal');
