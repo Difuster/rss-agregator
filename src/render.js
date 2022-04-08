@@ -12,9 +12,6 @@ const renderModal = (modal, postTitle, postURL, postDescr) => {
   title.textContent = postTitle;
   const description = modal.querySelector('.modal-body');
   description.textContent = postDescr;
-  const divModalBackdrop = document.createElement('div');
-  divModalBackdrop.classList.add('modal-backdrop', 'fade', 'show');
-  body.append(divModalBackdrop);
   modal.querySelector('.full-article').setAttribute('href', postURL);
 };
 
