@@ -85,7 +85,11 @@ const renderPosts = (state, i18nInstance) => {
       const item = document.createElement('li');
       item.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
       const link = document.createElement('a');
-      post.viewed === false ? link.classList.add('fw-bold') : link.classList.add('fw-normal', 'text-secondary');
+      if (post.viewed) {
+        link.classList.add('fw-normal', 'text-secondary');
+      } else {
+        link.classList.add('fw-bold');
+      }
       link.setAttribute('target', '_blank');
       const previewBtn = document.createElement('button');
       previewBtn.classList.add('btn', 'btn-outline-primary', 'btn-sm');
