@@ -88,14 +88,12 @@ const renderPosts = (state, i18nInstance) => {
       post.viewed === false ? link.classList.add('fw-bold') : link.classList.add('fw-normal', 'text-secondary');
       link.setAttribute('target', '_blank');
       const previewBtn = document.createElement('button');
+      previewBtn.classList.add('btn', 'btn-outline-primary', 'btn-sm');
       previewBtn.setAttribute('type', 'button');
       previewBtn.setAttribute('role', 'button');
-      previewBtn.classList.add('btn', 'btn-outline-primary', 'btn-sm');
       previewBtn.setAttribute('data-bs-toggle', 'modal');
       previewBtn.setAttribute('data-bs-target', '#modal');
-      previewBtn.setAttribute('aria-label', 'preview');
       previewBtn.textContent = i18nInstance.t(['postText.preview']);
-      console.log(previewBtn);
       link.textContent = post.title;
       link.href = post.link;
       item.append(link, previewBtn);
