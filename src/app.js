@@ -1,12 +1,13 @@
 import * as yup from 'yup';
+import _ from 'lodash';
 import i18n from 'i18next';
 import onChange from 'on-change';
 import ru from './locales/ru.js';
-import { downloadRSS, updateRSS } from './rss.js';
+import downloadRSS from './rss.js';
 import {
   hideModal, renderForm, renderPosts, renderFeeds, renderMessage,
 } from './render.js';
-import parseUrl from './parser.js';
+import parseRSS from './parser.js';
 
 export default () => {
   const input = document.querySelector('#url-input');
@@ -76,8 +77,25 @@ export default () => {
     return schema.validate(link);
   };
 
+  const updateRSS = (data) => {
+    data.feeds.forEach((feed) => {
+      const rss = downloadRSS(feed.link);
+      rss
+        .then((response) => {
+          const newFeed = parseRSS(response, feed.link);
+          const oldFeedTitles = feed.posts.map((item) => item.title);
+          const newFeedTitles = newFeed.posts.map((item) => item.title);
+          const newTitles = _.differenceWith(newFeedTitles, oldFeedTitles, _.isEqual);
+          newTitles.reverse().forEach((title) => {
+            const newPost = newFeed.posts.filter((post) => post.title === title);
+            feed.posts = [...newPost, ...feed.posts];
+          });
+        });
+    });
+  };
+
   const updateFeed = () => {
-    updateRSS(state.feeds);
+    updateRSS(state, i18nInstance);
     watchedState.status = 'updated';
     watchedState.status = '';
     setTimeout(() => {
@@ -98,7 +116,7 @@ export default () => {
         const rss = downloadRSS(url);
         rss
           .then((response) => {
-            const feed = parseUrl(response);
+            const feed = parseRSS(response, url);
             state.feeds.unshift(feed);
             state.uploadedFeeds.push(url);
             state.error = i18nInstance.t(['successMessage']);
