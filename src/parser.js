@@ -26,5 +26,6 @@ export default (rss, url) => {
     description: feedDescription,
     link: feedLink,
     posts,
+    isShown: true,
   };
 };

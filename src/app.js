@@ -1,8 +1,9 @@
+import 'bootstrap';
 import * as yup from 'yup';
 import _ from 'lodash';
 import i18n from 'i18next';
 import onChange from 'on-change';
-import ru from './locales/ru.js';
+import resources from './locales/index.js';
 import downloadRSS from './rss.js';
 import {
   hideModal, renderForm, renderPosts, renderFeeds, renderMessage,
@@ -20,25 +21,17 @@ export default () => {
   i18nInstance.init({
     lng: 'ru',
     debug: false,
-    resources: {
-      ru,
-    },
-  });
+    resources,
+  }).then((t) => t);
 
   const state = {
-    url: '',
-    status: '',
-    uploadedFeeds: [],
-    error: '',
+    status: null,
+    error: null,
     feeds: [],
-    selectedFeed: [],
   };
 
   const watchedState = onChange(state, () => {
     switch (state.status) {
-      case 'begin':
-        renderForm('begin', input, btn);
-        break;
       case 'filling':
         renderForm('filling', input, btn);
         break;
@@ -62,7 +55,8 @@ export default () => {
     }
   });
 
-  const validateLink = (link, uploadedFeeds) => {
+  const validateLink = (link, feeds) => {
+    const links = feeds.map((feed) => feed.link);
     yup.setLocale({
       mixed: {
         notOneOf: 'notOneOf',
@@ -73,7 +67,7 @@ export default () => {
       },
     });
     const schema = yup.string().url().min(1)
-      .notOneOf(uploadedFeeds);
+      .notOneOf(links);
     return schema.validate(link);
   };
 
@@ -109,8 +103,8 @@ export default () => {
 
   btn.addEventListener('click', (e) => {
     e.preventDefault();
-    state.url = input.value;
-    validateLink(state.url, state.uploadedFeeds)
+    const currUrl = input.value;
+    validateLink(currUrl, state.feeds)
       .then((url) => {
         watchedState.status = 'loading';
         const rss = downloadRSS(url);
@@ -118,7 +112,6 @@ export default () => {
           .then((response) => {
             const feed = parseRSS(response, url);
             state.feeds.unshift(feed);
-            state.uploadedFeeds.push(url);
             state.error = i18nInstance.t(['successMessage']);
             watchedState.status = 'resolved';
             renderMessage(state.error);
@@ -147,5 +140,6 @@ export default () => {
     }
   });
 
-  watchedState.status = 'begin';
+  input.focus();
+  btn.disabled = false;
 };

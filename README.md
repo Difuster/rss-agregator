@@ -3,6 +3,14 @@
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/e53ae58b4f815bc1fc07/maintainability)](https://codeclimate.com/github/Difuster/frontend-project-lvl3/maintainability)
 
-**Visit website**
-&nbsp; 
-https://rss-news-difuster.vercel.app
+![example workflow](https://github.com/Difuster/frontend-project-lvl3/actions/workflows/linter.yml/badge.svg)
+  
+    
+Удобный агрегатор новостных лент с автоматическим обновлением и возможностью выбирать конкретную ленту из списка всех добавленных.  
+
+**Установка**
+
+`make install`  
+
+
+**Ссылка на сайт**:  https://rss-news-difuster.vercel.app

@@ -28,10 +28,6 @@ const hideModal = (modal) => {
 
 const renderForm = (status, input, btn) => {
   switch (status) {
-    case 'begin':
-      input.focus();
-      btn.disabled = false;
-      break;
     case 'filling':
       btn.disabled = false;
       input.classList.remove('is-invalid');
@@ -58,12 +54,6 @@ const renderForm = (status, input, btn) => {
 };
 
 const renderPosts = (state, i18nInstance) => {
-  let feeds;
-  if (state.selectedFeed.length === 0) {
-    feeds = state.feeds;
-  } else {
-    feeds = state.selectedFeed;
-  }
   const postsDiv = document.querySelector('.posts');
   postsDiv.innerHTML = '';
   const cardDiv = document.createElement('div');
@@ -77,7 +67,10 @@ const renderPosts = (state, i18nInstance) => {
   listItem.classList.add('list-group', 'border-0', 'rounded-0');
   const modal = document.querySelector('#modal');
 
-  feeds.forEach((feed) => {
+  state.feeds.forEach((feed) => {
+    if (!feed.isShown) {
+      return;
+    }
     const links = feed.posts.map((post) => {
       const item = document.createElement('li');
       item.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
@@ -158,8 +151,11 @@ const renderFeeds = (state, i18nInstance) => {
     });
     h3.addEventListener('click', (e) => {
       e.preventDefault();
-      state.selectedFeed = [];
-      state.selectedFeed.push(feed);
+      state.feeds.forEach((item) => {
+        item.isShown = false;
+      });
+      feed.isShown = true;
+      console.log(state.feeds);
       renderPosts(state, i18nInstance);
     });
   });
