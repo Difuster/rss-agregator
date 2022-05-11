@@ -8,7 +8,7 @@ export default (rss, url) => {
     throw new Error('RSSError');
   }
   const feedTitle = parsedDoc.querySelector('channel>title').textContent;
-  const feedID = uniqueId();
+  const feedId = uniqueId();
   const feedDescription = parsedDoc.querySelector('channel>description').textContent;
   const feedLink = url;
   const postTitles = Array.from(parsedDoc.querySelectorAll('item>title')).map((item) => item.textContent);
@@ -17,15 +17,24 @@ export default (rss, url) => {
   const posts = [];
   for (let i = 0; i < postTitles.length; i += 1) {
     posts.push({
-      title: postTitles[i], link: postLinks[i], description: postDescr[i], viewed: false,
+      feedId,
+      id: uniqueId(),
+      title: postTitles[i],
+      link: postLinks[i],
+      description: postDescr[i],
+      viewed: false,
     });
   }
-  return {
-    id: feedID,
+
+  const feed = {
+    id: feedId,
     title: feedTitle,
     description: feedDescription,
     link: feedLink,
+  };
+
+  return {
+    feed,
     posts,
-    isShown: true,
   };
 };

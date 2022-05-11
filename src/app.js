@@ -3,22 +3,25 @@ import * as yup from 'yup';
 import _ from 'lodash';
 import i18n from 'i18next';
 import onChange from 'on-change';
+
 import resources from './locales/index.js';
 import downloadRSS from './rss.js';
-import {
-  hideModal, renderForm, renderPosts, renderFeeds, renderMessage,
-} from './render.js';
+import { hideModal } from './render/modal.js';
+import renderForm from './render/form.js';
+import renderPosts from './render/posts.js';
+import renderFeeds from './render/feeds.js';
+import renderMessage from './render/message.js';
 import parseRSS from './parser.js';
 
-export default () => {
+export default async () => {
   const input = document.querySelector('#url-input');
-  const btn = document.querySelector('[aria-label="add"]');
+  const btnAdd = document.querySelector('[aria-label="add"]');
   const modal = document.querySelector('#modal');
   const modalCloseBtns = modal.querySelectorAll('button');
   const readArticleBtn = modal.querySelector('.full-article');
 
   const i18nInstance = i18n.createInstance();
-  i18nInstance.init({
+  await i18nInstance.init({
     lng: 'ru',
     debug: false,
     resources,
@@ -26,29 +29,46 @@ export default () => {
 
   const state = {
     status: null,
-    error: null,
+    validationStatus: null,
+    errors: [],
     feeds: [],
+    posts: [],
+    updatingPeriod: 5000,
+    checkedFeedId: 0,
   };
 
-  const watchedState = onChange(state, () => {
+  const watchedStatus = onChange(state, () => {
     switch (state.status) {
       case 'filling':
-        renderForm('filling', input, btn);
+        renderForm('filling', input, btnAdd);
         break;
       case 'loading':
-        renderForm('loading', input, btn);
+        renderForm('loading', input, btnAdd);
         break;
       case 'resolved':
-        renderForm('resolved', input, btn);
+        renderForm('resolved', input, btnAdd);
         renderPosts(state, i18nInstance);
         renderFeeds(state, i18nInstance);
         break;
       case 'rejected':
-        renderForm('rejected', input, btn);
+        renderForm('rejected', input, btnAdd);
         break;
       case 'updated':
         renderPosts(state, i18nInstance);
         renderFeeds(state, i18nInstance);
+        break;
+      default:
+        break;
+    }
+  });
+
+  const watchedValidation = onChange(state, () => {
+    switch (state.validationStatus) {
+      case 'valid':
+        state.errors.push(i18nInstance.t(['isValid']));
+        break;
+      case 'invalid':
+        renderForm('rejected', input, btnAdd);
         break;
       default:
         break;
@@ -77,56 +97,61 @@ export default () => {
       rss
         .then((response) => {
           const newFeed = parseRSS(response, feed.link);
-          const oldFeedTitles = feed.posts.map((item) => item.title);
+          const oldFeedTitles = data.posts.map((item) => item.title);
           const newFeedTitles = newFeed.posts.map((item) => item.title);
           const newTitles = _.differenceWith(newFeedTitles, oldFeedTitles, _.isEqual);
           newTitles.reverse().forEach((title) => {
             const newPost = newFeed.posts.filter((post) => post.title === title);
-            feed.posts = [...newPost, ...feed.posts];
+            data.posts = [...newPost, ...data.posts];
           });
         });
     });
   };
 
   const updateFeed = () => {
+    const period = state.updatingPeriod;
     updateRSS(state, i18nInstance);
-    watchedState.status = 'updated';
-    watchedState.status = '';
+    watchedStatus.status = 'updated';
+    watchedStatus.status = '';
     setTimeout(() => {
       updateFeed();
-    }, 5000);
+    }, period);
   };
 
   input.addEventListener('input', () => {
-    watchedState.status = 'filling';
+    watchedStatus.status = 'filling';
   });
 
-  btn.addEventListener('click', (e) => {
+  btnAdd.addEventListener('click', (e) => {
     e.preventDefault();
     const currUrl = input.value;
     validateLink(currUrl, state.feeds)
       .then((url) => {
-        watchedState.status = 'loading';
+        watchedValidation.validationStatus = 'valid';
+        watchedStatus.status = 'loading';
         const rss = downloadRSS(url);
         rss
           .then((response) => {
-            const feed = parseRSS(response, url);
-            state.feeds.unshift(feed);
-            state.error = i18nInstance.t(['successMessage']);
-            watchedState.status = 'resolved';
-            renderMessage(state.error);
+            const { feed, posts } = parseRSS(response, url);
+            state.feeds = [feed, ...state.feeds];
+            state.posts = _.flatten([posts, ...state.posts]);
+            state.errors.push(i18nInstance.t(['successMessage']));
+            watchedStatus.status = 'resolved';
+            watchedValidation.validationStatus = null;
+            renderMessage(state.errors);
             updateFeed();
           })
           .catch((error) => {
-            state.error = i18nInstance.t([`errMessages.${error.message}`]);
-            watchedState.status = 'rejected';
-            renderMessage(state.error);
+            state.errors.push(i18nInstance.t([`errMessages.${error.message}`]));
+            watchedStatus.status = 'rejected';
+            renderMessage(state.errors);
           });
       })
       .catch((error) => {
-        state.error = error.errors.map((err) => i18nInstance.t([`errMessages.${err}`]));
-        renderMessage(state.error);
-        watchedState.status = 'rejected';
+        watchedValidation.validationStatus = 'invalid';
+        const curErr = error.errors.map((err) => i18nInstance.t([`errMessages.${err}`]));
+        state.errors = _.flatten([...state.errors, curErr]);
+        renderMessage(state.errors);
       });
   });
 
@@ -141,5 +166,5 @@ export default () => {
   });
 
   input.focus();
-  btn.disabled = false;
+  btnAdd.disabled = false;
 };

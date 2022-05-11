@@ -18,10 +18,21 @@
   "bugs": {
     "url": "https://github.com/Difuster/frontend-project-lvl3/issues"
   },
+  "babel": {
+    "plugins": [
+      [
+        "@babel/plugin-transform-runtime",
+        {
+          "regenerator": true
+        }
+      ]
+    ]
+  },
   "homepage": "https://github.com/Difuster/frontend-project-lvl3#readme",
   "devDependencies": {
     "@babel/cli": "^7.17.6",
     "@babel/core": "^7.17.5",
+    "@babel/plugin-transform-runtime": "^7.17.10",
     "@babel/preset-env": "^7.16.11",
     "@webpack-cli/generators": "^2.4.2",
     "babel-loader": "^8.2.3",

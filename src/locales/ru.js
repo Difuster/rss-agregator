@@ -7,6 +7,7 @@ export default {
       notOneOf: 'RSS уже существует',
       'Network Error': 'Ошибка сети',
     },
+    isValid: 'Ссылка содержит валидный URL',
     successMessage: 'RSS успешно загружен',
     outputHeaders: {
       posts: 'Посты',
