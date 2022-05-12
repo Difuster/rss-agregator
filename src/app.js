@@ -12,6 +12,7 @@ import renderPosts from './render/posts.js';
 import renderFeeds from './render/feeds.js';
 import renderMessage from './render/message.js';
 import parseRSS from './parser.js';
+import updateRss from './updateRss.js';
 
 export default async () => {
   const input = document.querySelector('#url-input');
@@ -28,8 +29,8 @@ export default async () => {
   }).then((t) => t);
 
   const state = {
-    status: null,
-    validationStatus: null,
+    status: 'ready',
+    validationStatus: 'ready',
     errors: [],
     feeds: [],
     posts: [],
@@ -39,6 +40,10 @@ export default async () => {
 
   const watchedStatus = onChange(state, () => {
     switch (state.status) {
+      case 'start':
+        input.focus();
+        btnAdd.disabled = false;
+        break;
       case 'filling':
         renderForm('filling', input, btnAdd);
         break;
@@ -64,6 +69,8 @@ export default async () => {
 
   const watchedValidation = onChange(state, () => {
     switch (state.validationStatus) {
+      case 'ready':
+        break;
       case 'valid':
         state.errors.push(i18nInstance.t(['isValid']));
         break;
@@ -91,28 +98,11 @@ export default async () => {
     return schema.validate(link);
   };
 
-  const updateRSS = (data) => {
-    data.feeds.forEach((feed) => {
-      const rss = downloadRSS(feed.link);
-      rss
-        .then((response) => {
-          const newFeed = parseRSS(response, feed.link);
-          const oldFeedTitles = data.posts.map((item) => item.title);
-          const newFeedTitles = newFeed.posts.map((item) => item.title);
-          const newTitles = _.differenceWith(newFeedTitles, oldFeedTitles, _.isEqual);
-          newTitles.reverse().forEach((title) => {
-            const newPost = newFeed.posts.filter((post) => post.title === title);
-            data.posts = [...newPost, ...data.posts];
-          });
-        });
-    });
-  };
-
   const updateFeed = () => {
     const period = state.updatingPeriod;
-    updateRSS(state, i18nInstance);
+    updateRss(state, i18nInstance);
     watchedStatus.status = 'updated';
-    watchedStatus.status = '';
+    watchedStatus.status = 'ready';
     setTimeout(() => {
       updateFeed();
     }, period);
@@ -137,7 +127,7 @@ export default async () => {
             state.posts = _.flatten([posts, ...state.posts]);
             state.errors.push(i18nInstance.t(['successMessage']));
             watchedStatus.status = 'resolved';
-            watchedValidation.validationStatus = null;
+            watchedValidation.validationStatus = 'ready';
             renderMessage(state.errors);
             updateFeed();
           })
@@ -165,6 +155,5 @@ export default async () => {
     }
   });
 
-  input.focus();
-  btnAdd.disabled = false;
+  watchedStatus.status = 'start';
 };
