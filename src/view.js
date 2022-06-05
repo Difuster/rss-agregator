@@ -2,7 +2,6 @@ import onChange from 'on-change';
 import renderForm from './render/form.js';
 import renderPosts from './render/posts.js';
 import renderFeeds from './render/feeds.js';
-import { hideModal } from './render/modal.js';
 
 export default (state, path, value, elements) => {
   console.log(elements);
