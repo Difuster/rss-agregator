@@ -31,6 +31,7 @@ export default (rss, url) => {
     title: feedTitle,
     description: feedDescription,
     link: feedLink,
+    checked: false,
   };
 
   return {

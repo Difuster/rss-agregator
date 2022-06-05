@@ -3,7 +3,7 @@
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/e53ae58b4f815bc1fc07/maintainability)](https://codeclimate.com/github/Difuster/frontend-project-lvl3/maintainability)
 
-![example workflow](https://github.com/Difuster/frontend-project-lvl3/actions/workflows/linter.yml/badge.svg)
+[![example workflow](https://github.com/Difuster/frontend-project-lvl3/actions/workflows/linter.yml/badge.svg)](https://github.com/Difuster/frontend-project-lvl3/actions)
   
     
 Удобный агрегатор новостных лент с автоматическим обновлением и возможностью выбирать конкретную ленту из списка всех добавленных.  

@@ -2,85 +2,37 @@ import 'bootstrap';
 import * as yup from 'yup';
 import _ from 'lodash';
 import i18n from 'i18next';
-import onChange from 'on-change';
 
-import resources from './locales/index.js';
+import updateRss from './updateRss.js';
 import downloadRSS from './rss.js';
-import { hideModal } from './render/modal.js';
-import renderForm from './render/form.js';
-import renderPosts from './render/posts.js';
-import renderFeeds from './render/feeds.js';
 import renderMessage from './render/message.js';
 import parseRSS from './parser.js';
-import updateRss from './updateRss.js';
+import watcher from './view.js';
+import init from './init.js';
 
-export default async () => {
+const app = () => {
   const input = document.querySelector('#url-input');
   const btnAdd = document.querySelector('[aria-label="add"]');
-  const modal = document.querySelector('#modal');
-  const modalCloseBtns = modal.querySelectorAll('button');
-  const readArticleBtn = modal.querySelector('.full-article');
+  const modalWindow = document.querySelector('#modal');
+  const readArticleBtn = modalWindow.querySelector('.full-article');
+  const text = i18n.t;
 
-  const i18nInstance = i18n.createInstance();
-  await i18nInstance.init({
-    lng: 'ru',
-    debug: false,
-    resources,
-  }).then((t) => t);
+  const elements = [input, btnAdd, text, modalWindow, readArticleBtn];
 
   const state = {
-    status: 'ready',
-    validationStatus: 'ready',
-    errors: [],
+    urlValidation: {
+      status: 'idle', // filling, valid, invalid
+    },
+    feedFetching: {
+      status: null, // idle, fetching, finished, failed, updated
+    },
     feeds: [],
     posts: [],
-    updatingPeriod: 5000,
-    checkedFeedId: 0,
+    errors: [],
+    modal: {
+      status: 'hidden',
+    },
   };
-
-  const watchedStatus = onChange(state, () => {
-    switch (state.status) {
-      case 'start':
-        input.focus();
-        btnAdd.disabled = false;
-        break;
-      case 'filling':
-        renderForm('filling', input, btnAdd);
-        break;
-      case 'loading':
-        renderForm('loading', input, btnAdd);
-        break;
-      case 'resolved':
-        renderForm('resolved', input, btnAdd);
-        renderPosts(state, i18nInstance);
-        renderFeeds(state, i18nInstance);
-        break;
-      case 'rejected':
-        renderForm('rejected', input, btnAdd);
-        break;
-      case 'updated':
-        renderPosts(state, i18nInstance);
-        renderFeeds(state, i18nInstance);
-        break;
-      default:
-        break;
-    }
-  });
-
-  const watchedValidation = onChange(state, () => {
-    switch (state.validationStatus) {
-      case 'ready':
-        break;
-      case 'valid':
-        state.errors.push(i18nInstance.t(['isValid']));
-        break;
-      case 'invalid':
-        renderForm('rejected', input, btnAdd);
-        break;
-      default:
-        break;
-    }
-  });
 
   const validateLink = (link, feeds) => {
     const links = feeds.map((feed) => feed.link);
@@ -99,17 +51,17 @@ export default async () => {
   };
 
   const updateFeed = () => {
-    const period = state.updatingPeriod;
-    updateRss(state, i18nInstance);
-    watchedStatus.status = 'updated';
-    watchedStatus.status = 'ready';
+    const period = 5000;
+    updateRss(state);
+    watcher(state, 'feedFetching', 'updated', elements);
+    watcher(state, 'feedFetching', 'idle', elements);
     setTimeout(() => {
       updateFeed();
     }, period);
   };
 
   input.addEventListener('input', () => {
-    watchedStatus.status = 'filling';
+    watcher(state, 'urlValidation', 'filling', elements);
   });
 
   btnAdd.addEventListener('click', (e) => {
@@ -117,43 +69,36 @@ export default async () => {
     const currUrl = input.value;
     validateLink(currUrl, state.feeds)
       .then((url) => {
-        watchedValidation.validationStatus = 'valid';
-        watchedStatus.status = 'loading';
+        watcher(state, 'urlValidation', 'valid', elements);
+        state.errors.push(text(['isValid']));
+        watcher(state, 'feedFetching', 'fetching', elements);
         const rss = downloadRSS(url);
         rss
           .then((response) => {
             const { feed, posts } = parseRSS(response, url);
             state.feeds = [feed, ...state.feeds];
             state.posts = _.flatten([posts, ...state.posts]);
-            state.errors.push(i18nInstance.t(['successMessage']));
-            watchedStatus.status = 'resolved';
-            watchedValidation.validationStatus = 'ready';
+            state.errors.push(text(['successMessage']));
+            watcher(state, 'feedFetching', 'finished', elements);
+            watcher(state, 'urlValidation', 'idle', elements);
             renderMessage(state.errors);
             updateFeed();
           })
           .catch((error) => {
-            state.errors.push(i18nInstance.t([`errMessages.${error.message}`]));
-            watchedStatus.status = 'rejected';
+            state.errors.push(text([`errMessages.${error.message}`]));
+            watcher(state, 'feedFetching', 'failed', elements);
             renderMessage(state.errors);
           });
       })
       .catch((error) => {
-        watchedValidation.validationStatus = 'invalid';
-        const curErr = error.errors.map((err) => i18nInstance.t([`errMessages.${err}`]));
+        watcher(state, 'urlValidation', 'invalid', elements);
+        const curErr = error.errors.map((err) => text([`errMessages.${err}`]));
         state.errors = _.flatten([...state.errors, curErr]);
         renderMessage(state.errors);
       });
   });
 
-  modal.addEventListener('click', (event) => {
-    event.preventDefault();
-    if (event.target === modalCloseBtns[0] || event.target === modalCloseBtns[1]) {
-      hideModal(modal);
-    }
-    if (event.target === readArticleBtn) {
-      window.open(readArticleBtn.getAttribute('href'));
-    }
-  });
-
-  watchedStatus.status = 'start';
+  watcher(state, 'feedFetching', 'idle', elements);
 };
+
+export default () => init().then(app);

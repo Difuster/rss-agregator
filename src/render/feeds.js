@@ -1,6 +1,6 @@
 import renderPosts from './posts.js';
 
-export default (state, i18nInstance) => {
+export default (state, text) => {
   const feedDiv = document.querySelector('.feeds');
   feedDiv.innerHTML = '';
   const cardDiv = document.createElement('div');
@@ -9,7 +9,7 @@ export default (state, i18nInstance) => {
   cardBodyDiv.classList.add('card-body');
   const cardHeader = document.createElement('h2');
   cardHeader.classList.add('card-title', 'h4');
-  cardHeader.textContent = i18nInstance.t(['outputHeaders.feeds']);
+  cardHeader.textContent = text(['outputHeaders.feeds']);
   const ul = document.createElement('ul');
   ul.classList.add('list-group', 'border-0', 'rounded-0');
 
@@ -33,8 +33,11 @@ export default (state, i18nInstance) => {
 
     h3.addEventListener('click', (e) => {
       e.preventDefault();
-      state.checkedFeedId = feed.id;
-      renderPosts(state, i18nInstance);
+      state.feeds.map((item) => {
+        item.id === feed.id ? item.checked = true : item.checked = false;
+        return item;
+      });
+      renderPosts(state, text);
     });
   });
 

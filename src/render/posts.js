@@ -1,6 +1,13 @@
-import { renderModal } from './modal.js';
+import renderModal from './modal.js';
 
-export default (state, i18nInstance) => {
+const getLinksToRender = (state) => {
+  let links = [];
+  const checkedFeeds = state.feeds.filter((feed) => feed.checked === true);
+  checkedFeeds.length > 0 ? links = [...state.posts.filter((post) => post.feedId === checkedFeeds[0].id)] : links = [...state.posts];
+  return links;
+};
+
+export default (state, text) => {
   const postsDiv = document.querySelector('.posts');
   postsDiv.innerHTML = '';
   const cardDiv = document.createElement('div');
@@ -9,7 +16,7 @@ export default (state, i18nInstance) => {
   cardBodyDiv.classList.add('card-body');
   const postHeader = document.createElement('h2');
   postHeader.classList.add('card-title', 'h4');
-  postHeader.textContent = i18nInstance.t(['outputHeaders.posts']);
+  postHeader.textContent = text(['outputHeaders.posts']);
   const listItem = document.createElement('ul');
   listItem.classList.add('list-group', 'border-0', 'rounded-0');
   const modal = document.querySelector('#modal');
@@ -31,7 +38,7 @@ export default (state, i18nInstance) => {
       previewBtn.setAttribute('role', 'button');
       previewBtn.setAttribute('data-bs-toggle', 'modal');
       previewBtn.setAttribute('data-bs-target', '#modal');
-      previewBtn.textContent = i18nInstance.t(['postText.preview']);
+      previewBtn.textContent = text(['postText.preview']);
       link.textContent = post.title;
       link.href = post.link;
       item.append(link, previewBtn);
@@ -64,12 +71,5 @@ export default (state, i18nInstance) => {
     postsDiv.append(cardDiv);
   };
 
-  let linksToRender = [];
-  if (state.checkedFeedId > 0) {
-    linksToRender = state.posts.filter((post) => post.feedId === state.checkedFeedId);
-  } else {
-    linksToRender = [...state.posts];
-  }
-
-  createPosts(linksToRender);
+  createPosts(getLinksToRender(state));
 };
