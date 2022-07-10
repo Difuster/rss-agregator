@@ -6,7 +6,7 @@ import renderFeeds from './render/feeds.js';
 export default (state, path, value, elements) => {
   const [input, btnAdd, text] = elements;
   const watchedState = onChange(state, () => {
-    const { urlValidation, feedFetching, modal } = state;
+    const { urlValidation, feedFetching } = state;
 
     switch (urlValidation.status) {
       case 'idle':
