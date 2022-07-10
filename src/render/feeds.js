@@ -34,7 +34,11 @@ export default (state, text) => {
     h3.addEventListener('click', (e) => {
       e.preventDefault();
       state.feeds.map((item) => {
-        item.id === feed.id ? item.checked = true : item.checked = false;
+        if (item.id === feed.id) {
+          item.checked = true;
+        } else {
+          item.checked = false;
+        }
         return item;
       });
       renderPosts(state, text);

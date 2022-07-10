@@ -3,7 +3,11 @@ import renderModal from './modal.js';
 const getLinksToRender = (state) => {
   let links = [];
   const checkedFeeds = state.feeds.filter((feed) => feed.checked === true);
-  checkedFeeds.length > 0 ? links = [...state.posts.filter((post) => post.feedId === checkedFeeds[0].id)] : links = [...state.posts];
+  if (checkedFeeds.length > 0) {
+    links = [...state.posts.filter((post) => post.feedId === checkedFeeds[0].id)];
+  } else {
+    links = [...state.posts];
+  }
   return links;
 };
 
