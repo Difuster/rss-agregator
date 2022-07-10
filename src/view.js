@@ -4,9 +4,7 @@ import renderPosts from './render/posts.js';
 import renderFeeds from './render/feeds.js';
 
 export default (state, path, value, elements) => {
-  console.log(elements);
-  const [input, btnAdd, text, modalWindow, readArticleBtn] = elements;
-  console.log(modalWindow);
+  const [input, btnAdd, text] = elements;
   const watchedState = onChange(state, () => {
     const { urlValidation, feedFetching, modal } = state;
 
@@ -48,17 +46,6 @@ export default (state, path, value, elements) => {
       default:
         break;
     }
-
-    // switch (modal.status) {
-    //   case 'hidden':
-    //     hideModal(modalWindow);
-    //     break;
-    //   case 'opened':
-    //     window.open(readArticleBtn.getAttribute('href'));
-    //     break;
-    //   default:
-    //     break;
-    // }
   });
 
   watchedState[path].status = value;
