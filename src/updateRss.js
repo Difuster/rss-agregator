@@ -3,7 +3,7 @@ import downloadRSS from './rss.js';
 import parseRSS from './parser.js';
 
 export default (state) => {
-  state.feeds.forEach((feed) => {
+  const promises = state.feeds.map((feed) => {
     const rss = downloadRSS(feed.link);
     rss
       .then((response) => {
@@ -16,5 +16,8 @@ export default (state) => {
           state.posts = [...newPost, ...state.posts];
         });
       });
+    return rss;
   });
+
+  return Promise.all(promises);
 };
