@@ -130,11 +130,13 @@ const renderPosts = (state, t) => {
     postsDiv.append(cardDiv);
   };
 
-  let links = [];
+  let posts = [];
   const checkedFeeds = state.uiState.feeds.filter((feed) => feed.checked === true);
-  links = checkedFeeds.length > 0 ? [...state.posts.filter((post) => post.feedId === checkedFeeds[0].feedId)] : [...state.posts];
+  const checkedFeedId = checkedFeeds.length > 0 ? checkedFeeds[0].feedId : null;
+  const postsIfFeedChecked = [...state.posts.filter((post) => post.feedId === checkedFeedId)];
+  posts = postsIfFeedChecked.length > 0 ? postsIfFeedChecked : [...state.posts];
 
-  createPosts(links);
+  createPosts(posts);
 };
 
 const renderFeeds = (state, t) => {

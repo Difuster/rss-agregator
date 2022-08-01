@@ -63,11 +63,17 @@ const app = () => {
             const newPost = newFeed.posts.filter((post) => post.title === title);
             posts = [...newPost, ...posts];
           });
-          const newUIPosts = newFeed.posts.map((post) => {
-            const res = newTitles.includes(post.title) ? ({ postId: post.id, viewed: false }) : null;
-            return res;
-          }).filter((post) => post !== null);
-          uiState.posts = [...newUIPosts, ...uiState.posts];
+
+          const newUiStatePosts = newFeed.posts.filter((post) => newTitles.includes(post.title))
+            .map((post) => {
+              const newPost = {
+                postId: post.id,
+                viewed: false,
+              };
+              return newPost;
+            });
+
+          uiState.posts = [...newUiStatePosts, ...uiState.posts];
         });
       return rss;
     });
