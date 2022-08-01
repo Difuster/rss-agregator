@@ -7,24 +7,31 @@ export default (rss, url) => {
   if (parsedDoc.querySelector('parsererror')) {
     throw new Error('RSSError');
   }
-  const feedTitle = parsedDoc.querySelector('channel>title').textContent;
   const feedId = uniqueId();
-  const feedDescription = parsedDoc.querySelector('channel>description').textContent;
   const feedLink = url;
+  const feedTitle = parsedDoc.querySelector('channel>title').textContent;
+  const feedDescription = parsedDoc.querySelector('channel>description').textContent;
   const postTitles = Array.from(parsedDoc.querySelectorAll('item>title')).map((item) => item.textContent);
   const postLinks = Array.from(parsedDoc.querySelectorAll('item>link')).map((item) => item.textContent);
   const postDescr = Array.from(parsedDoc.querySelectorAll('item>description')).map((item) => item.textContent);
   const posts = [];
   for (let i = 0; i < postTitles.length; i += 1) {
+    const postId = uniqueId();
     posts.push({
       feedId,
-      id: uniqueId(),
+      id: postId,
       title: postTitles[i],
       link: postLinks[i],
       description: postDescr[i],
-      viewed: false,
     });
   }
+
+  const uiStateFeed = {
+    feedId,
+    checked: false,
+  };
+
+  const uiStatePosts = posts.map((post) => ({ postId: post.id, viewed: false }));
 
   const feed = {
     id: feedId,
@@ -37,5 +44,7 @@ export default (rss, url) => {
   return {
     feed,
     posts,
+    uiStateFeed,
+    uiStatePosts,
   };
 };

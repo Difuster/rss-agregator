@@ -1,18 +1,36 @@
 import 'bootstrap';
 import * as yup from 'yup';
 import _ from 'lodash';
+import axios from 'axios';
+import onChange from 'on-change';
 
-import initState from './initState.js';
-import updateRss from './updateRss.js';
-import downloadRSS from './rss.js';
 import parseRSS from './parser.js';
-import { elements, watcher } from './view.js';
+import { elements, setStateStatus } from './view.js';
 import init from './init.js';
 
-const [input, btnAdd, text] = elements;
+const [input, btnAdd] = elements;
 
 const app = () => {
-  const state = initState;
+  const state = {
+    urlValidation: {
+      status: 'idle', // filling, valid, invalid
+    },
+    feedFetching: {
+      status: 'ready', // fetching, finished, failed, updated
+    },
+    feeds: [],
+    posts: [],
+    errors: [],
+    uiState: {
+      modal: {
+        status: 'hidden',
+      },
+      feeds: [],
+      posts: [],
+    },
+  };
+
+  const watchedState = onChange(state, () => setStateStatus(state));
 
   const validateLink = (link, feeds) => {
     const links = feeds.map((feed) => feed.link);
@@ -30,20 +48,53 @@ const app = () => {
     return schema.validate(link);
   };
 
+  const downloadRSS = (url) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`);
+
+  const updateRss = (feeds, posts, uiState) => {
+    const promises = feeds.map((feed) => {
+      const rss = downloadRSS(feed.link);
+      rss
+        .then((response) => {
+          const newFeed = parseRSS(response, feed.link);
+          const oldFeedTitles = posts.map((item) => item.title);
+          const newFeedTitles = newFeed.posts.map((item) => item.title);
+          const newTitles = _.differenceWith(newFeedTitles, oldFeedTitles, _.isEqual);
+          newTitles.reverse().forEach((title) => {
+            const newPost = newFeed.posts.filter((post) => post.title === title);
+            posts = [...newPost, ...posts];
+          });
+          const newUIPosts = newFeed.posts.map((post) => {
+            const res = newTitles.includes(post.title) ? ({ postId: post.id, viewed: false }) : null;
+            return res;
+          }).filter((post) => post !== null);
+          uiState.posts = [...newUIPosts, ...uiState.posts];
+        });
+      return rss;
+    });
+
+    return Promise.all(promises);
+  };
+
   const updateFeed = () => {
     const period = 5000;
-    updateRss(state)
-      .then(() => {
-        watcher('feedFetching', 'updated');
-        setTimeout(() => {
-          watcher('feedFetching', 'idle');
-          updateFeed();
-        }, period);
-      });
+    if (state.feedFetching !== 'fetching') {
+      updateRss(state.feeds, state.posts, state.uiState)
+        .then(() => {
+          watchedState.feedFetching.status = 'updated';
+          setTimeout(() => {
+            watchedState.feedFetching.status = 'idle';
+            updateFeed();
+          }, period);
+        });
+    } else {
+      setTimeout(() => {
+        updateFeed();
+      }, period);
+    }
   };
 
   input.addEventListener('input', () => {
-    watcher('urlValidation', 'filling');
+    watchedState.urlValidation.status = 'filling';
   });
 
   btnAdd.addEventListener('click', (e) => {
@@ -51,33 +102,38 @@ const app = () => {
     const currUrl = input.value;
     validateLink(currUrl, state.feeds)
       .then((url) => {
-        state.errors.push(text(['isValid']));
-        watcher('urlValidation', 'valid');
-        watcher('feedFetching', 'fetching');
+        state.errors.push('isValid');
+        watchedState.urlValidation.status = 'valid';
+        watchedState.feedFetching.status = 'fetching';
         const rss = downloadRSS(url);
         rss
           .then((response) => {
-            const { feed, posts } = parseRSS(response, url);
-            state.feeds = [feed, ...state.feeds];
+            const {
+              feed, uiStateFeed, posts, uiStatePosts,
+            } = parseRSS(response, url);
+
+            state.errors.push('successMessage');
+            state.feeds.push(feed);
+            state.uiState.feeds.push(uiStateFeed);
             state.posts = _.flatten([posts, ...state.posts]);
-            state.errors.push(text(['successMessage']));
-            watcher('feedFetching', 'finished');
-            watcher('urlValidation', 'idle');
+            state.uiState.posts = [...uiStatePosts, ...state.uiState.posts];
+
+            watchedState.urlValidation.status = 'idle';
+            watchedState.feedFetching.status = 'finished';
             updateFeed();
           })
           .catch((error) => {
-            state.errors.push(text([`errMessages.${error.message}`]));
-            watcher('feedFetching', 'failed');
+            state.errors.push(error.message);
+            watchedState.feedFetching.status = 'failed';
           });
       })
       .catch((error) => {
-        const curErr = error.errors.map((err) => text([`errMessages.${err}`]));
-        state.errors = _.flatten([...state.errors, curErr]);
-        watcher('urlValidation', 'invalid');
+        state.errors.push(error.message);
+        watchedState.urlValidation.status = 'invalid';
       });
   });
 
-  watcher('feedFetching', 'idle');
+  watchedState.feedFetching.status = 'idle';
 };
 
 export default () => init().then(app);
