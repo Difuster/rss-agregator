@@ -3,6 +3,7 @@ import * as yup from 'yup';
 import _ from 'lodash';
 import axios from 'axios';
 import onChange from 'on-change';
+import uniqueId from 'lodash/uniqueId.js';
 
 import parseRSS from './parser.js';
 import { elements, setStateStatus } from './view.js';
@@ -115,8 +116,24 @@ const app = () => {
         rss
           .then((response) => {
             const {
-              feed, uiStateFeed, posts, uiStatePosts,
+              feed, posts,
             } = parseRSS(response, url);
+
+            const feedId = uniqueId();
+            feed.id = feedId;
+
+            posts.forEach((post) => {
+              const postId = uniqueId();
+              post.id = postId;
+              post.feedId = feed.id;
+            });
+
+            const uiStateFeed = {
+              feedId: feed.id,
+              checked: false,
+            };
+
+            const uiStatePosts = posts.map((post) => ({ postId: post.id, viewed: false }));
 
             state.errors.push('successMessage');
             state.feeds.push(feed);
